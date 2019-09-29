@@ -13,27 +13,35 @@
 # BASIC CHECKS
 ################################################################################
 
-[ $# -eq 0 ] && { echo "Usage: $0 [-help] project_name [...]"; exit 1; }
-[ $1 = "-help" ] && { echo "################################################################################
+[ $# -eq 0 ] && { echo -e "################################################################################
 #                               CreateProject42                                #
-#        This shell provide an operational folder for a 42 project.
+#        This shell provide an operational folder for a 42 project.            #
 ################################################################################
 
-project_name:	Name of your project (used for foldername).
-[-option]:
-		[-model /your/template/file/path/]: Use your Project Template.
-		[-libft /your/libft/file/path/]: Use your Libft.
-		[-desc 'Your description of the project here']: Added to README.md"; exit 1; }
+		\033[1;37mUsage: ./CreateProject42 project_name [-options]\033[0m
+
+project_name:
+	Name of your project (used for foldername).
+
+[-options]:
+	[-model /your/template/file/path/]: Use your Project Template.
+	[-libft /your/libft/file/path/]: Use your Libft.
+	[-desc 'Your description of the project here']: Added to README.md
+
+More details in the code..."; exit 1; }
 
 ################################################################################
 # VARIABLES
 ################################################################################
 
+PROJECT_NAME=$1
+
 LIBFT=0
 MODEL=0
 DESC=0
 
-LIBFT_PATH="/Users/manzovince/Documents/Computer_Science/42HolyGraph/1_Global/42-libft"
+LIBFT_PATH="EMPTY"
+MODEL_PATH="EMPTY"
 
 for arg in "$@"
 do
@@ -52,14 +60,23 @@ done
 echo "Creating folders..."
 sleep 0.5
 
-[ MODEL_PATH != "" ] && { echo "Duplicating model $MODEL_PATH...";
+[ $MODEL_PATH != "EMPTY" ] && { echo "Duplicating model $MODEL_PATH...";
 							sleep 0.5; cp -r $MODEL_PATH $1;
-							echo "$1 is ready to launch!"; exit 0; }
-mkdir $1 # Create Project folder
-cd $1
+							echo -e "\033[1;32m$PROJECT_NAME is ready to launch!\033[0m"; exit 0; }
+
+# THE ABOVE PART IS ONLY IN CASE OF NO MODEL PROVIDED
+#
+# If you already have a template for the project folder,
+# you can replace MODEL_PATH="EMPTY" with the absolute path
+# of your folder.
+# You can also edit at your convenience the template provided
+# by default.
+
+mkdir $PROJECT_NAME # Create Project folder
+cd $PROJECT_NAME
 mkdir src obj inc lib doc # Create basic folders
-[ LIBFT_PATH != "" ] && ln -s $LIBFT_PATH lib/libft # Symlink of libft
-echo "# $1" > README.md # README file added
+[ $LIBFT_PATH != "EMPTY" ] && ln -s $LIBFT_PATH lib/libft # Symlink of libft
+echo "# $PROJECT_NAME" > README.md # README file added
 
 ################################################################################
 # CREATING FILES
@@ -74,9 +91,16 @@ sleep 0.5
 
 echo $'#include "../inc/include.h"
 
-int		main()
+int		main(int ac, char **av)
 {
-	write(1, "Hello World!\n", 13);
+	if (ac > 1)
+	{
+		while (*av[1])
+			write(1, av[1]++, 1);
+	}
+	else
+		write(1, "Hello World!", 12);
+	write(1, "\\n", 1);
 	return (0);
 }' > src/main.c
 
@@ -96,7 +120,6 @@ echo $'#ifndef LIB_NAME
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "../lib/libft/includes/libft.h"
 
 /*
 ** --------------------------------- DEFINES -----------------------------------
@@ -170,11 +193,8 @@ CC			=	gcc $(CFLAGS)
 all:	$(NAME)
 
 $(NAME):
-	$(CC) -I. -L./lib/libft/ -lft $(SRC) -o $(NAME)
+	$(CC) -I. $(SRC) -o $(NAME)
 	mv *.o $(OBJ_PATH)
-
-libft:
-	@make -C./lib/libft/
 
 clean:
 	$(RM) $(OBJ)
@@ -194,4 +214,4 @@ norme:
 # END
 ################################################################################
 
-echo "$1 is ready to launch!"
+echo -e "\033[1;32m$PROJECT_NAME is ready to launch!\033[0m"
